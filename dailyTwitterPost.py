@@ -90,4 +90,28 @@ def get_tweet_time():
     target_time = datetime.combine(target_date, datetime.min.time()) + timedelta(hours=args.hour)
     return target_time
 
-# ... (rest of the code in the next response)
+def summarize_schedule(quotes, start_date, end_date):
+    """Provides a summary of the scheduled tweets."""
+    print("\nTweet Schedule Summary:")
+    print(f"- Total Quotes: {len(quotes)}")
+    print(f"- Start Date: {start_date.strftime('%Y-%m-%d')}")
+    print(f"- End Date: {end_date.strftime('%Y-%m-%d')}")
+
+    confirm = input("Proceed with scheduling tweets? (yes/no): ")
+    return confirm.lower() == 'yes'
+
+if __name__ == "__main__":
+    quotes_file = Path(quotes_file_path)  
+    api = authenticate_twitter_api()
+
+    quotes = fetch_quotes_from_github()
+    if quotes:
+        start_date = get_tweet_time().date()
+        end_date = start_date + timedelta(days=len(quotes) - 1) 
+
+        if summarize_schedule(quotes, start_date, end_date):
+            for i, quote in enumerate(quotes):
+                target_time = datetime.combine(start_date + timedelta(days=i), datetime.min.time()) + timedelta(hours=args.hour)
+                schedule_and_post_tweet(api, target_time, quote)
+        else:
+            print("Tweet scheduling canceled.")
